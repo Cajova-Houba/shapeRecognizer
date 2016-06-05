@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p %c{2}:%L - %M - %m%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+  	<!--  core logger -->
+  	<Logger name="org.zdenda.shapes.recognizer.core" level="trace" additivity="false">
+  		<AppenderRef ref="Console" />
+  	</Logger>
+  
+  	<!-- logger for lines -->
+  	<Logger name="org.zdenda.shapes.recognizer.core.lines" level="trace" additivity="false">
+  		<AppenderRef ref="Console"/>
+  	</Logger>
+  	
+  	<!-- root logger -->
+    <Root level="error">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>
