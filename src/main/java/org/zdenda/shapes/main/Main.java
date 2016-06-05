@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.zdenda.shapes.recognizer.core.BitmapConverter;
+import org.zdenda.shapes.recognizer.core.Line;
 import org.zdenda.shapes.recognizer.core.Pixel;
 import org.zdenda.shapes.recognizer.core.lines.Lines;
 
@@ -54,12 +55,12 @@ public class Main {
 		
 		//try to find a line
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
+		Line line = Lines.findLine(bitmap);
 		
-		if(line.length == 0) {
+		if(line == null) {
 			System.out.println("No line found.");
 		} else {
-			System.out.println("Line found from: ["+line[0].x+","+line[0].y+"] to: ["+line[1].x+","+line[1].y+"]");
+			System.out.println("Line found from: ["+line.getStart().x+","+line.getStart().y+"] to: ["+line.getStart().x+","+line.getStart().y+"]");
 		}
 	}
 

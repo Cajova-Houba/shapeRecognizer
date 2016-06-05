@@ -7,17 +7,20 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
 import org.junit.Test;
 import org.zdenda.shapes.recognizer.core.BitmapConverter;
 import org.zdenda.shapes.recognizer.core.Direction;
+import org.zdenda.shapes.recognizer.core.Line;
 import org.zdenda.shapes.recognizer.core.Pixel;
 
 public class LinesTest {
 
 	//test files
+	//one line
 	private final String path = "/testImg/lines/";
 	private final String noLines = "noline.bmp";
 	private final String horizontalLine = "horizontalLine.bmp";
@@ -27,24 +30,30 @@ public class LinesTest {
 	private final String SWline1 = "SWline1.bmp";
 	private final String SWline2 = "SWline2.bmp";
 	
+	//more lines
+	private final String horizontalLines = "horizontalLines.bmp";
+	private final String verticalLines = "verticalLines.bmp";
+	private final String SElines = "SElines.bmp";
+	private final String SWlines = "SWlines.bmp";
+	
 	@Test
 	public void testFindLineFail1() {
-		Point[] line = Lines.findLine(null);
-		assertEquals("Point array should be empty!", 0, line.length);
+		Line line = Lines.findLine(null);
+		assertEquals("Line should be null!", null, line);
 	}
 	
 	@Test
 	public void testFindLineFail2() {
 		Pixel[][] bitmap = new Pixel[0][0];
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("Point array should be empty!", 0, line.length);
+		Line line = Lines.findLine(bitmap);
+		assertEquals("Line should be null!", null, line);
 	}
 	
 	@Test
 	public void testFindLineFail3() {
 		Pixel[][] bitmap = new Pixel[1][0];
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("Point array should be empty!", 0, line.length);
+		Line line = Lines.findLine(bitmap);
+		assertEquals("Line should be null!", null, line);
 	}
 	
 	@Test
@@ -55,8 +64,8 @@ public class LinesTest {
 		}
 		
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("No line should have been found!", 0, line.length);
+		Line line = Lines.findLine(bitmap);
+		assertEquals("No line should have been found!", null, line);
 	}
 	
 	@Test
@@ -67,12 +76,11 @@ public class LinesTest {
 		}
 		
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("One line should have been found!", 2, line.length);
+		Line line = Lines.findLine(bitmap);
 		
 		//check the points
-		assertEquals("The line should start on [2,9]!",new Point(2, 9), line[0]);
-		assertEquals("The line should end on [17,9]!",new Point(17, 9), line[1]);
+		assertEquals("The line should start on [2,9]!",new Point(2, 9), line.getStart());
+		assertEquals("The line should end on [17,9]!",new Point(17, 9), line.getEnd());
 	}
 	
 	@Test
@@ -83,12 +91,11 @@ public class LinesTest {
 		}
 		
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("One line should have been found!", 2, line.length);
+		Line line = Lines.findLine(bitmap);
 		
 		//check the points
-		assertEquals("The line should start on [9,2]!",new Point(9, 2), line[0]);
-		assertEquals("The line should end on [9,17]!",new Point(9, 17), line[1]);
+		assertEquals("The line should start on [9,2]!",new Point(9, 2), line.getStart());
+		assertEquals("The line should end on [9,17]!",new Point(9, 17), line.getEnd());
 	}
 	
 	@Test
@@ -99,12 +106,11 @@ public class LinesTest {
 		}
 		
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("One line should have been found!", 2, line.length);
+		Line line = Lines.findLine(bitmap);
 		
 		//check the points
-		assertEquals("The line should start on [2,2]!",new Point(2, 2), line[0]);
-		assertEquals("The line should end on [17,17]!",new Point(17, 17), line[1]);
+		assertEquals("The line should start on [2,2]!",new Point(2, 2), line.getStart());
+		assertEquals("The line should end on [17,17]!",new Point(17, 17), line.getEnd());
 	}
 	
 	@Test
@@ -115,12 +121,11 @@ public class LinesTest {
 		}
 		
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("One line should have been found!", 2, line.length);
+		Line line = Lines.findLine(bitmap);
 		
 		//check the points
-		assertEquals("The line should start on [3,2]!",new Point(3, 2), line[0]);
-		assertEquals("The line should end on [12,16]!",new Point(12, 16), line[1]);
+		assertEquals("The line should start on [3,2]!",new Point(3, 2), line.getStart());
+		assertEquals("The line should end on [12,16]!",new Point(12, 16), line.getEnd());
 	}
 	
 	@Test
@@ -131,12 +136,11 @@ public class LinesTest {
 		}
 		
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("One line should have been found!", 2, line.length);
+		Line line = Lines.findLine(bitmap);
 		
 		//check the points
-		assertEquals("The line should start on [17, 2]!",new Point(17, 2), line[0]);
-		assertEquals("The line should end on [2, 17]!",new Point(2, 17), line[1]);
+		assertEquals("The line should start on [17, 2]!",new Point(17, 2), line.getStart());
+		assertEquals("The line should end on [2, 17]!",new Point(2, 17), line.getEnd());
 	}
 	
 	@Test
@@ -147,12 +151,95 @@ public class LinesTest {
 		}
 		
 		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
-		Point[] line = Lines.findLine(bitmap);
-		assertEquals("One line should have been found!", 2, line.length);
+		Line line = Lines.findLine(bitmap);
 		
 		//check the points
-		assertEquals("The line should start on [16, 2]!",new Point(16, 2), line[0]);
-		assertEquals("The line should end on [7, 16]!",new Point(7, 16), line[1]);
+		assertEquals("The line should start on [16, 2]!",new Point(16, 2), line.getStart());
+		assertEquals("The line should end on [7, 16]!",new Point(7, 16), line.getEnd());
+	}
+	
+	@Test
+	public void testFindLineHorizontals(){
+		BufferedImage image = openImage(getClass().getResource(path+horizontalLines));
+		if(image == null) {
+			fail();
+		}
+		
+		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
+		List<Line> lines = Lines.findLines(bitmap);
+		
+		assertEquals("Two lines should have been found!",2,lines.size());
+		
+		
+		//check the points
+		assertEquals("The first line should start on [3, 9]!",new Point(3, 9), lines.get(0).getStart());
+		assertEquals("The first line should end on [26, 9]!",new Point(26, 9), lines.get(0).getEnd());
+		
+		assertEquals("The second line should start on [3, 9]!",new Point(3, 43), lines.get(1).getStart());
+		assertEquals("The second line should end on [26, 9]!",new Point(26, 43), lines.get(1).getEnd());
+	}
+	
+	@Test
+	public void testFindLineVerticals(){
+		BufferedImage image = openImage(getClass().getResource(path+verticalLines));
+		if(image == null) {
+			fail();
+		}
+		
+		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
+		List<Line> lines = Lines.findLines(bitmap);
+		
+		assertEquals("Two lines should have been found!",2,lines.size());
+		
+		
+		//check the points
+		assertEquals("The first line should start on [6, 3]!",new Point(6, 3), lines.get(0).getStart());
+		assertEquals("The first line should end on [6, 46]!",new Point(6, 46), lines.get(0).getEnd());
+		
+		assertEquals("The second line should start on [22, 3]!",new Point(22, 3), lines.get(1).getStart());
+		assertEquals("The second line should end on [22, 46]!",new Point(22, 46), lines.get(1).getEnd());
+	}
+	
+	@Test
+	public void testFindLineSEs(){
+		BufferedImage image = openImage(getClass().getResource(path+SElines));
+		if(image == null) {
+			fail();
+		}
+		
+		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
+		List<Line> lines = Lines.findLines(bitmap);
+		
+		assertEquals("Two lines should have been found!",2,lines.size());
+		
+		
+		//check the points
+		assertEquals("The first line should start on [6, 3]!",new Point(6, 3), lines.get(0).getStart());
+		assertEquals("The first line should end on [27, 28]!",new Point(27, 28), lines.get(0).getEnd());
+		
+		assertEquals("The second line should start on [3, 17]!",new Point(3, 17), lines.get(1).getStart());
+		assertEquals("The second line should end on [22, 48]!",new Point(22, 48), lines.get(1).getEnd());
+	}
+	
+	@Test
+	public void testFindLineSWs(){
+		BufferedImage image = openImage(getClass().getResource(path+SWlines));
+		if(image == null) {
+			fail();
+		}
+		
+		Pixel[][] bitmap = BitmapConverter.convertToPixArray(image);
+		List<Line> lines = Lines.findLines(bitmap);
+		
+		assertEquals("Two lines should have been found!",2,lines.size());
+		
+		
+		//check the points
+		assertEquals("The first line should start on [23, 3]!",new Point(23, 3), lines.get(0).getStart());
+		assertEquals("The first line should end on [2, 28]!",new Point(2, 28), lines.get(0).getEnd());
+		
+		assertEquals("The second line should start on [26, 17]!",new Point(26, 17), lines.get(1).getStart());
+		assertEquals("The second line should end on [7, 48]!",new Point(7, 48), lines.get(1).getEnd());
 	}
 	
 	/**

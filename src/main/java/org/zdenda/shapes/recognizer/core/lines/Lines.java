@@ -1,11 +1,16 @@
 package org.zdenda.shapes.recognizer.core.lines;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.zdenda.shapes.recognizer.core.AreaAroundPoint;
 import org.zdenda.shapes.recognizer.core.Direction;
+import org.zdenda.shapes.recognizer.core.Line;
 import org.zdenda.shapes.recognizer.core.Pixel;
 
 /**
@@ -18,33 +23,103 @@ public class Lines {
 	protected static Logger logger = LogManager.getLogger(Lines.class);
 	
 	/**
-	 * This method will try to find a line in a bitmap. If line is found, then two points
-	 * representing this line are returned. Otherwise empty array is returned.
-	 * @param bitmap Bitmap on which search will be performed.
-	 * @return Two points representing the line or empty array.
+	 * Black points that were already visited.
+	 * Integer values is counted as a hash code of the coordinates.
+	 * 
 	 */
-	public static Point[] findLine(Pixel[][] bitmap) {
-		
+	protected static Set<Integer> visitedPoints;
+	
+	/**
+	 * This method will try to find every line in a bitmap. If no line is found, empty list is returned.
+	 * If the bitmap is null or dimensions are invalid (one of dimensions is 0), null is returned.
+	 * 
+	 * @param bitmap Bitmap on which search will be performed.
+	 * @return List with lines.
+	 */
+	public static List<Line> findLines(Pixel[][] bitmap) {
 		//check proper dimensions of bitmap
 		if(bitmap == null) {
 			logger.warn("Bitmap is null.");
-			return new Point[0];
+			return null;
 		}
 		
 		if(bitmap.length == 0) {
 			logger.warn("Bitmap length is 0.");
-			return new Point[0];
+			return null;
 		}
 		
 		if(bitmap[0].length == 0) {
 			logger.warn("One dimensional bitamp.");
-			return new Point[0];
+			return null;
+		}
+		
+		visitedPoints = new HashSet<Integer>();
+		List<Line> lines = new ArrayList<Line>();
+		int w = bitmap[0].length;
+		int h = bitmap.length;
+		logger.debug("Finding lines in bitmap "+w+" x "+h);
+		
+		
+		//this version works only with black & white (white as background) so the
+		//first point is first black pixel.
+		for(int i = 0; i < h; i++) {
+			for(int j = 0; j < w; j++) {
+				Pixel p = bitmap[i][j];
+				if(p == null) {
+					logger.warn("Pixel [{},{}] is null.",j,i);
+					continue;
+				}
+				
+				int hash = getCodeForCoordinates(j, i, p);
+				//first point must be black and not visited yet
+				if(p.isBlack() && !visitedPoints.contains(hash)) {
+					logger.debug("First point found at [{},{}].",j,i);
+					Point firstPoint = new Point(j, i);
+					visitedPoints.add(hash);
+					
+					Point secondPoint = findLineEnd(firstPoint, bitmap);
+					if(secondPoint == null) {
+						logger.warn("No second point found for point: {}.",firstPoint);
+						secondPoint = firstPoint;
+					}
+					lines.add(new Line(firstPoint, secondPoint));
+					
+				}
+			}
+		}
+		
+		return lines;
+	}
+	
+	/**
+	 * This method will try to find a line in a bitmap. If line is found, then object representing this line is returned. 
+	 * Otherwise null is returned.
+	 * @param bitmap Bitmap on which search will be performed.
+	 * @return Two points representing the line or null.
+	 */
+	public static Line findLine(Pixel[][] bitmap) {
+		
+		//check proper dimensions of bitmap
+		if(bitmap == null) {
+			logger.warn("Bitmap is null.");
+			return null;
+		}
+		
+		if(bitmap.length == 0) {
+			logger.warn("Bitmap length is 0.");
+			return null;
+		}
+		
+		if(bitmap[0].length == 0) {
+			logger.warn("One dimensional bitamp.");
+			return null;
 		}
 		
 		int w = bitmap[0].length;
 		int h = bitmap.length;
 		logger.debug("Finding line in bitmap "+w+" x "+h);
 		
+		visitedPoints = new HashSet<Integer>();
 		Point first = null;
 		
 		//find the first point
@@ -59,9 +134,12 @@ public class Lines {
 					continue;
 				}
 				
-				if(p.isBlack()) {
+				int hash = getCodeForCoordinates(j, i, p);
+				//first point must be black and not visited yet
+				if(p.isBlack() && !visitedPoints.contains(hash)) {
 					logger.debug("First point found at [{},{}].",j,i);
 					first = new Point(j, i);
+					visitedPoints.add(hash);
 					stop = true;
 					break;
 				}
@@ -75,7 +153,7 @@ public class Lines {
 		//if no first point of line is found, return empty array
 		if(first == null) {
 			logger.debug("No line found.");
-			return new Point[0];
+			return null;
 		}
 		
 		//get the end point of line
@@ -87,13 +165,14 @@ public class Lines {
 		}
 		
 		logger.debug("Line from: {} to: {} found.",first,endPoint);
-		return new Point[] {first, endPoint};
+		return new Line(first, endPoint);
 	}
 	
 	/**
 	 * This method will try to find the end of the line in bitmap.
 	 * If no other point besides the {@code firstPoint} is found, then
-	 * null is returned.
+	 * null is returned. {@code visitedPoints} must be initialized, before
+	 * calling this method.
 	 * 
 	 * It is assumed that bitmap is checked for valid dimensions.
 	 * 
@@ -124,6 +203,9 @@ public class Lines {
 		Point lineEnd = nextPoint;
 		while(nextPoint != null) {
 			lineEnd = nextPoint; //last non-null point
+			int hash = getCodeForCoordinates(nextPoint.x, nextPoint.y, bitmap[nextPoint.y][nextPoint.x]);
+			visitedPoints.add(hash);
+
 			nextPoint = findNextPoint(nextPoint, bitmap, direction);
 			logger.trace("Next point is: {}.",nextPoint);
 		}
@@ -240,4 +322,19 @@ public class Lines {
 		}
 	}
 	
+	/**
+	 * Returns the hash code for pixel. This code also counts the coordinates of pixel.
+	 * @param x X value.
+	 * @param y Y value.
+	 * @param p Pixel, null safe.
+	 * @return Hash code.
+	 */
+	private static int getCodeForCoordinates(int x, int y, Pixel p) {
+		int code = 7;
+		code = code * 71 + x;
+		code = code * 71 + y;
+		code = code * 71 + (p == null ? 0 : p.hashCode());
+		
+		return code;
+	}
 }
